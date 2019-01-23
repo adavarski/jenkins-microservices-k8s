@@ -542,7 +542,7 @@ $ helm  install --set usePassword=false --name mongodb  stable/mongodb
 
 Deploy blueprint app
 
-Create a multibranch pipline with a fork of this repository as the Git source for the pipeline using provided Jenkinsfile.
+Create a multibranch pipline with a fork of this repository as the Git source for the pipeline using provided Jenkinsfile.Jenkins-inside-k8s.
 
 $ kubectl get pod
 NAME                       READY   STATUS    RESTARTS   AGE
