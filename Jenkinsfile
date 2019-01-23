@@ -48,7 +48,7 @@ node {
     
     stage('Deploy') {
         sh "helm --kubeconfig=./admin.conf init --client-only --skip-refresh"
-        sh "helm --kubeconfig=./admin.conf upgrade mongodb mongodb/charts/mongodb --install"   
+        sh "helm --kubeconfig=./admin.conf upgrade mongodb mongodb/charts/mongodb --install --set usePassword=false"   
 
         /* sh "helm --kubeconfig=./admin.conf install --set usePassword=false --name mongodb  stable/mongodb" */
         sh "helm --kubeconfig=./admin.conf upgrade post post/charts/post --install --set image.tag=latest"
