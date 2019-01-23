@@ -14,6 +14,7 @@ node {
          * docker build on the command line */
         sh "cd post"
         app_post = docker.build("davarski/post")
+        sh "cd ../"
     }
 
     stage('Test image post') {
@@ -23,6 +24,7 @@ node {
         app_post.inside {
             sh 'echo "Tests passed"'
         }
+    }
    
 
     stage('Push image') {
@@ -34,6 +36,7 @@ node {
             app_post.push("latest")
         }
 
+    }
     stage('Deploy') {
         sh "helm --kubeconfig=./admin.conf init --client-only --skip-refresh"
         sh "helm --kubeconfig=./admin.conf upgrade mongodb mongodb/charts/mongodb --install   
@@ -44,4 +47,4 @@ node {
 }
 
 }
-    }
+    
