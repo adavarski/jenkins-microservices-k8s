@@ -12,9 +12,7 @@ node {
     stage('Build image post') {
         /* This builds the actual image; synonymous to
          * docker build on the command line */
-        sh "cd post"
-        app_post = docker.build("davarski/post")
-        sh "cd ../"
+        app_post = docker.build("davarski/post", "./post")
     }
 
     stage('Test image post') {
