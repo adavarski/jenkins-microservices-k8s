@@ -15,17 +15,8 @@ node {
         app_post = docker.build("davarski/post", "./post")
     }
 
-    stage('Test image post') {
-        /* Ideally, we would run a test framework against our image.
-         * For this example, we're using a Volkswagen-type approach ;-) */
-
-        app_post.inside {
-            sh 'echo "Tests passed"'
-        }
-    }
    
-
-    stage('Push image') {
+    stage('Push image post') {
         /* Finally, we'll push the image with two tags:
          * First, the incremental build number from Jenkins
          * Second, the 'latest' tag.
