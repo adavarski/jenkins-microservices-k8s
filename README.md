@@ -357,7 +357,7 @@ Finished: SUCCESS
 
 ```
 
-
+curl `minikube ip`:30408
 
 ## Test microservices locally:
 ```
