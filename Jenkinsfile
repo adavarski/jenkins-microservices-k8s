@@ -26,6 +26,26 @@ node {
         }
 
     }
+    
+    stage('Build image ui') {
+        /* This builds the actual image; synonymous to
+         * docker build on the command line */
+        app_ui = docker.build("davarski/ui", "./ui")
+    }
+
+   
+    stage('Push image ui') {
+        /* Finally, we'll push the image with two tags:
+         * First, the incremental build number from Jenkins
+         * Second, the 'latest' tag.
+         * Pushing multiple tags is cheap, as all the layers are reused. */
+        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+            app_ui.push("latest")
+        }
+
+    }
+    
+    
     stage('Deploy') {
         sh "helm --kubeconfig=./admin.conf init --client-only --skip-refresh"
         sh "helm --kubeconfig=./admin.conf upgrade mongodb mongodb/charts/mongodb --install"   
