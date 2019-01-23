@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: post
+  name: post
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: post
+    spec:
+      containers:
+      - env:
+        - name: POST_DATABASE_HOST
+          value: mongo
+        image: davarski/post
+        name: post
+        resources: {}
+      restartPolicy: Always
+status: {}

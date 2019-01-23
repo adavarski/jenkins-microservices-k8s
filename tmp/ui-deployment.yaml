@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ui
+  name: ui
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: ui
+    spec:
+      containers:
+      - env:
+        - name: POST_SERVICE_HOST
+          value: post
+        - name: POST_SERVICE_PORT
+          value: "5000"
+        image: davarski/ui
+        name: ui
+        ports:
+        - containerPort: 9292
+        resources: {}
+      restartPolicy: Always
+status: {}

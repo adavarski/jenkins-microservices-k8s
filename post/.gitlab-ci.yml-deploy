@@ -1,0 +1,79 @@
+stages:
+  - build
+  - test
+  - release
+  - deploy
+  
+variables:
+
+  CONTAINER_IMAGE: davarski/post
+  CONTAINER_IMAGE_BUILT: ${CONTAINER_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHA}
+  CONTAINER_IMAGE_LATEST: ${CONTAINER_IMAGE}:latest
+  CI_REGISTRY: index.docker.io  # container registry URL
+  CA: /etc/deploy/ca.crt
+  
+
+# build container image
+build:
+  tags:
+  - docker-minikube2
+  stage: build
+  image: docker:latest
+  services:
+  - docker:dind
+  script:
+    - echo "Building Dockerfile-based application..."
+    - docker build -t ${CONTAINER_IMAGE_BUILT} .
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
+    - echo "Pushing to the Container Registry..."
+    - docker push ${CONTAINER_IMAGE_BUILT}
+
+# run tests against built image
+test:
+  stage: test
+  script:
+    - exit 0
+
+# tag container image that passed the tests successfully
+# and push it to the registry
+release:
+  tags:
+  - docker-minikube2
+  stage: release
+  image: docker:latest
+  services:
+  - docker:dind
+  script:
+    - echo "Pulling docker image from Container Registry"
+    - docker pull ${CONTAINER_IMAGE_BUILT}
+    - echo "Logging to Container Registry at ${CI_REGISTRY}"
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD}
+    - echo "Pushing to Container Registry..."
+    - docker tag ${CONTAINER_IMAGE_BUILT} ${CONTAINER_IMAGE}:$(cat VERSION)
+    - docker push ${CONTAINER_IMAGE}:$(cat VERSION)
+    - docker tag ${CONTAINER_IMAGE}:$(cat VERSION) ${CONTAINER_IMAGE_LATEST}
+    - docker push ${CONTAINER_IMAGE_LATEST}
+    - echo ""
+  only:
+    - master
+    
+deploy_staging:
+  tags:
+  - docker-minikube2 
+  stage: deploy
+  image: davarski/k8s-helm:latest
+  before_script:
+    - mkdir -p /etc/deploy
+    - echo ${CI_ENV_K8S_CA}|base64 -d > ${CA}
+    - kubectl config set-cluster minikube --server=${CI_ENV_K8S_MASTER} --certificate-authority=/etc/deploy/ca.crt --embed-certs=true
+    - kubectl config set-credentials default --token=${CI_ENV_K8S_SA_TOKEN}
+    - kubectl config set-context myctxt --cluster=minikube --user=default
+    - kubectl config use-context myctxt
+    - helm init --client-only
+
+  script:
+    - helm  upgrade post ./charts/post --install  --set image.tag=latest 
+  environment:
+    name: staging
+  only:
+  - master     

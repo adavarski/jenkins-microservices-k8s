@@ -1,0 +1,27 @@
+stages:
+  - deploy
+  
+variables:
+
+  CA: /etc/deploy/ca.crt
+  
+deploy_staging:
+  tags:
+  - docker-minikube3
+  stage: deploy
+  image: davarski/k8s-helm:latest
+  before_script:
+    - mkdir -p /etc/deploy
+    - echo ${CI_ENV_K8S_CA}|base64 -d > ${CA}
+    - kubectl config set-cluster minikube --server=${CI_ENV_K8S_MASTER} --certificate-authority=/etc/deploy/ca.crt --embed-certs=true
+    - kubectl config set-credentials default --token=${CI_ENV_K8S_SA_TOKEN}
+    - kubectl config set-context myctxt --cluster=minikube --user=default
+    - kubectl config use-context myctxt
+    - helm init --client-only
+
+  script:
+    - helm  upgrade mongodb ./charts/mongodb --install   
+  environment:
+    name: staging
+  only:
+  - master   
