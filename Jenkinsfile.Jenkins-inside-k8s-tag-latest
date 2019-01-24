@@ -1,0 +1,73 @@
+def withPod(body) {
+  podTemplate(label: 'pod', serviceAccount: 'default', containers: [
+      containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true),
+      containerTemplate(name: 'helm', image: 'davarski/k8s-helm:latest', command: 'cat', ttyEnabled: true)
+    ],
+    volumes: [
+      hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+    ]
+ ) { body() }
+}
+
+withPod {
+  node('pod') {
+    def tag = "${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
+    def app_post
+    def app_ui
+    
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+
+        checkout scm
+    }
+
+
+    container('docker') {
+      stage('Build image post') {
+        /* This builds the actual image; synonymous to
+         * docker build on the command line */
+        app_post = docker.build("davarski/post", "./post")
+    }
+
+    stage('Push image post') {
+        /* Finally, we'll push the image with two tags:
+         * First, the incremental build number from Jenkins
+         * Second, the 'latest' tag.
+         * Pushing multiple tags is cheap, as all the layers are reused. */
+        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+            app_post.push("latest")
+        }
+        }
+
+    
+    stage('Build image ui') {
+        /* This builds the actual image; synonymous to
+         * docker build on the command line */
+        app_ui = docker.build("davarski/ui", "./ui")
+    }
+
+  
+    stage('Push image ui') {
+        /* Finally, we'll push the image with two tags:
+         * First, the incremental build number from Jenkins
+         * Second, the 'latest' tag.
+         * Pushing multiple tags is cheap, as all the layers are reused. */
+        docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+            app_ui.push("latest")
+        }
+   }
+  } 
+
+ container ('helm') {
+    stage('Deploy') {
+        sh "helm  init --client-only --skip-refresh"
+        sh "helm  upgrade mongodb mongodb/charts/mongodb --install --set usePassword=false"   
+
+        /* sh "helm --kubeconfig=./admin.conf install --set usePassword=false --name mongodb  stable/mongodb" */
+        sh "helm  upgrade post post/charts/post --install --set image.tag=latest"
+        sh "helm  upgrade ui ui/charts/ui --install --set image.tag=latest"
+}
+}
+}
+}
+
