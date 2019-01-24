@@ -36,7 +36,7 @@ withPod {
          * Pushing multiple tags is cheap, as all the layers are reused. */
         docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
             app_post.push("latest")
-            app_post.push($tag)
+            app_post.push(${tag})
         }
         }
 
@@ -55,7 +55,7 @@ withPod {
          * Pushing multiple tags is cheap, as all the layers are reused. */
         docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
             app_ui.push("latest")
-            app_ui.push($tag)
+            app_ui.push(${tag})
         }
    }
   } 
@@ -66,8 +66,8 @@ withPod {
         sh "helm  upgrade mongodb mongodb/charts/mongodb --install --set usePassword=false"   
 
         /* sh "helm --kubeconfig=./admin.conf install --set usePassword=false --name mongodb  stable/mongodb" */
-        sh "helm  upgrade post post/charts/post --install --set image.tag=$tag"
-        sh "helm  upgrade ui ui/charts/ui --install --set image.tag=$tag"
+        sh "helm  upgrade post post/charts/post --install --set image.tag=${tag}"
+        sh "helm  upgrade ui ui/charts/ui --install --set image.tag=${tag}"
 }
 }
 }
