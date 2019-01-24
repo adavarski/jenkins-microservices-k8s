@@ -39,7 +39,6 @@ withPod {
             app_post.push($tag)
         }
 
-    }
     
     stage('Build image ui') {
         /* This builds the actual image; synonymous to
@@ -59,9 +58,7 @@ withPod {
         }
    }
 
-}
-    
-    
+ 
     stage('Deploy') 
        container ('helm') {
        {
@@ -75,4 +72,4 @@ withPod {
 
 }
 
-}
+
