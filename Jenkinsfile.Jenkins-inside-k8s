@@ -58,9 +58,8 @@ withPod {
         }
    }
 
- 
-    stage('Deploy') 
-       container ('helm') {
+ container ('helm') {
+    stage('Deploy') {
         sh "helm  init --client-only --skip-refresh"
         sh "helm  upgrade mongodb mongodb/charts/mongodb --install --set usePassword=false"   
 
@@ -71,5 +70,6 @@ withPod {
 }
 
 }
+
 }
 }
