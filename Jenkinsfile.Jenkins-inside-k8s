@@ -64,12 +64,13 @@ withPod {
         sh "helm  upgrade mongodb mongodb/charts/mongodb --install --set usePassword=false"   
 
         /* sh "helm --kubeconfig=./admin.conf install --set usePassword=false --name mongodb  stable/mongodb" */
-        sh "helm  upgrade post post/charts/post --install --set image.tag=tag"
-        sh "helm  upgrade ui ui/charts/ui --install --set image.tag=tag"
+        sh "helm  upgrade post post/charts/post --install --set image.tag=$tag"
+        sh "helm  upgrade ui ui/charts/ui --install --set image.tag=$tag"
 
 }
 
 }
 
+}
 }
 }
